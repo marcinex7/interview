@@ -12,7 +12,7 @@ import java.util.List;
 
 // Using @Component instead of @Service (inconsistent with ProductServiceImpl)
 @Component
-public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceImplBase {
+public class CategoryGrpcServiceImpl extends CategoryGrpcServiceGrpc.CategoryGrpcServiceImplBase {
 
     // Field injection instead of constructor injection (inconsistent with ProductServiceImpl)
     @Autowired
@@ -24,7 +24,7 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
         try {
             // Different approach to get data (using try-catch instead of if-else)
             CategoryDTO categoryDTO = categoryService.getCategoryById(request.getCategoryId());
-            
+
             // Manual mapping (inconsistent with ProductServiceImpl's helper method)
             CategoryProto.CategoryData response = CategoryProto.CategoryData.newBuilder()
                     .setCategoryId(categoryDTO.id())
@@ -32,7 +32,7 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                     .setDescription(categoryDTO.description() != null ? categoryDTO.description() : "")
                     .addAllProductIds(categoryDTO.productIds() != null ? categoryDTO.productIds() : Collections.emptyList())
                     .build();
-            
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -49,7 +49,7 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                                 StreamObserver<CategoryProto.CategoriesList> responseObserver) {
         // Different approach to get all data
         List<CategoryDTO> categories = categoryService.getAllCategories();
-        
+
         List<CategoryProto.CategoryData> categoryDataList = new ArrayList<>();
         for (CategoryDTO categoryDTO : categories) {
             // Using for loop instead of forEach (inconsistent with ProductServiceImpl)
@@ -61,11 +61,11 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                     .build();
             categoryDataList.add(categoryData);
         }
-        
+
         CategoryProto.CategoriesList response = CategoryProto.CategoriesList.newBuilder()
                 .addAllCategories(categoryDataList)
                 .build();
-        
+
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
@@ -80,16 +80,16 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                 request.getDescription(),
                 Collections.emptyList()
         );
-        
+
         try {
             CategoryDTO createdCategory = categoryService.createCategory(categoryDTO);
-            
+
             CategoryProto.CategoryData response = CategoryProto.CategoryData.newBuilder()
                     .setCategoryId(createdCategory.id())
                     .setName(createdCategory.name())
                     .setDescription(createdCategory.description() != null ? createdCategory.description() : "")
                     .build();
-            
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -110,17 +110,17 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                 request.getDescription(),
                 Collections.emptyList()
         );
-        
+
         try {
             CategoryDTO updatedCategory = categoryService.updateCategory(request.getCategoryId(), categoryDTO);
-            
+
             CategoryProto.CategoryData response = CategoryProto.CategoryData.newBuilder()
                     .setCategoryId(updatedCategory.id())
                     .setName(updatedCategory.name())
                     .setDescription(updatedCategory.description() != null ? updatedCategory.description() : "")
                     .addAllProductIds(updatedCategory.productIds() != null ? updatedCategory.productIds() : Collections.emptyList())
                     .build();
-            
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -136,12 +136,12 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                               StreamObserver<CategoryProto.RemoveResponse> responseObserver) {
         try {
             categoryService.deleteCategory(request.getCategoryId());
-            
+
             // Different response structure than ProductServiceImpl
             CategoryProto.RemoveResponse response = CategoryProto.RemoveResponse.newBuilder()
                     .setSuccess(true)
                     .build();
-            
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -150,7 +150,7 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                     .setSuccess(false)
                     .setErrorMessage("Failed to delete category: " + e.getMessage())
                     .build();
-            
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
@@ -161,14 +161,14 @@ public class CategoryGrpcServiceImpl extends CategoryProto.CategoryGrpcServiceIm
                                   StreamObserver<CategoryProto.CategoryData> responseObserver) {
         try {
             CategoryDTO categoryDTO = categoryService.findByName(request.getName());
-            
+
             CategoryProto.CategoryData response = CategoryProto.CategoryData.newBuilder()
                     .setCategoryId(categoryDTO.id())
                     .setName(categoryDTO.name())
                     .setDescription(categoryDTO.description() != null ? categoryDTO.description() : "")
                     .addAllProductIds(categoryDTO.productIds() != null ? categoryDTO.productIds() : Collections.emptyList())
                     .build();
-            
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {

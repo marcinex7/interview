@@ -16,16 +16,31 @@ public class CategoryMapper {
 
     public CategoryMapper() {
         this.modelMapper = new ModelMapper();
-        
+
         // Configure ModelMapper to map between Category and CategoryDTO
-        modelMapper.createTypeMap(Category.class, CategoryDTO.class)
-            .addMapping(Category::getCategoryId, CategoryDTO::id)
-            .addMapping(src -> src.getProducts().stream()
-                .map(product -> product.getId())
-                .collect(Collectors.toList()), CategoryDTO::productIds);
-            
-        modelMapper.createTypeMap(CategoryDTO.class, Category.class)
-            .addMapping(CategoryDTO::id, Category::setCategoryId);
+        modelMapper.typeMap(Category.class, CategoryDTO.class)
+            .setConverter(context -> {
+                Category source = context.getSource();
+                List<Long> productIds = source.getProducts().stream()
+                    .map(product -> product.getId())
+                    .collect(Collectors.toList());
+                return new CategoryDTO(
+                    source.getCategoryId(),
+                    source.getName(),
+                    source.getDescription(),
+                    productIds
+                );
+            });
+
+        modelMapper.typeMap(CategoryDTO.class, Category.class)
+            .setConverter(context -> {
+                CategoryDTO source = context.getSource();
+                Category category = new Category();
+                category.setCategoryId(source.id());
+                category.setName(source.name());
+                category.setDescription(source.description());
+                return category;
+            });
     }
 
     public CategoryDTO toDto(Category category) {

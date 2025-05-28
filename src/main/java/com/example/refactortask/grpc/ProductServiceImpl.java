@@ -8,7 +8,7 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Service
+@GrpcService
 @RequiredArgsConstructor
 @Slf4j
 public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBase {
@@ -103,47 +103,6 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
-    @Override
-    public void updateProduct(UpdateProductRequest request, StreamObserver<ProductResponse> responseObserver) {
-        // Manual mapping from gRPC request to DTO (inconsistent with other mappers)
-        ProductDTO productDTO = ProductDTO.builder()
-                .id(request.getId())
-                .productName(request.getProductName())
-                .description(request.getDescription())
-                .productPrice(BigDecimal.valueOf(request.getProductPrice()))
-                .stock_quantity(request.getStockQuantity())
-                .categoryId(request.getCategoryId())
-                .build();
-
-        try {
-            ProductDTO updatedProduct = productService.updateProduct(request.getId(), productDTO);
-            responseObserver.onNext(mapToGrpcResponse(updatedProduct));
-            responseObserver.onCompleted();
-        } catch (RuntimeException e) {
-            responseObserver.onError(Status.INTERNAL
-                    .withDescription("Failed to update product: " + e.getMessage())
-                    .asRuntimeException());
-        }
-    }
-
-    @Override
-    public void deleteProduct(ProductRequest request, StreamObserver<DeleteResponse> responseObserver) {
-        try {
-            productService.deleteProduct(request.getId());
-            responseObserver.onNext(DeleteResponse.newBuilder()
-                    .setSuccess(true)
-                    .setMessage("Product deleted successfully")
-                    .build());
-            responseObserver.onCompleted();
-        } catch (RuntimeException e) {
-            responseObserver.onNext(DeleteResponse.newBuilder()
-                    .setSuccess(false)
-                    .setMessage("Failed to delete product: " + e.getMessage())
-                    .build());
-            responseObserver.onCompleted();
-        }
-    }
-
     // Helper method to map ProductDTO to gRPC ProductResponse
     private ProductResponse mapToGrpcResponse(ProductDTO productDTO) {
         ProductResponse.Builder builder = ProductResponse.newBuilder()
@@ -185,7 +144,6 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
         if (productDTO.getImageUrl() != null) {
             builder.setImageUrl(productDTO.getImageUrl());
         }
-
         return builder.build();
     }
 }

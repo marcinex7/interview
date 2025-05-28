@@ -40,6 +40,9 @@ dependencies {
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
 
+    // Spring Boot gRPC Starter
+    implementation 'net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE'
+
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"

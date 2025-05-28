@@ -7,7 +7,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
-// Using MapStruct for Product mapping
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 

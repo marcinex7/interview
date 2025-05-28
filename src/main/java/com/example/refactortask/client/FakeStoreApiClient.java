@@ -13,9 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Client for interacting with the Fake Store API
- */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -26,10 +23,6 @@ public class FakeStoreApiClient {
     @Value("${external.api.fakestore.url:https://fakestoreapi.com}")
     private String apiBaseUrl;
     
-    /**
-     * Fetches all products from the Fake Store API
-     * @return List of external products
-     */
     public List<ExternalProductDTO> getAllProducts() {
         try {
             String url = apiBaseUrl + "/products";
@@ -41,11 +34,6 @@ public class FakeStoreApiClient {
         }
     }
     
-    /**
-     * Fetches a single product by ID from the Fake Store API
-     * @param id The product ID
-     * @return Optional containing the product if found
-     */
     public Optional<ExternalProductDTO> getProductById(Integer id) {
         try {
             String url = apiBaseUrl + "/products/" + id;

@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-// Inconsistent annotation usage - using @Profile here but not in other config classes
 @Profile("!test")
 @RequiredArgsConstructor
 public class DataInitializer {

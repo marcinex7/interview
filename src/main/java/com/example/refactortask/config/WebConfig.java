@@ -7,12 +7,10 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-// Redundant @EnableWebMvc as Spring Boot auto-configures it
 @Configuration
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
 
-    // Redundant CORS configuration as it could be done in application.properties
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")

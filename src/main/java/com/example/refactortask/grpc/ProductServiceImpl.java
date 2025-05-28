@@ -42,14 +42,11 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
 
     @Override
     public void listProducts(ListProductsRequest request, StreamObserver<ListProductsResponse> responseObserver) {
-        // Get products from our database
         List<ProductDTO> products = productService.getAllProducts();
 
-        // Fetch external product data from Fake Store API
         List<ExternalProductDTO> externalProducts = fakeStoreApiClient.getAllProducts();
         log.info("Fetched {} products from external API", externalProducts.size());
 
-        // Create a map of external products by name for easier lookup
         Map<String, ExternalProductDTO> externalProductMap = externalProducts.stream()
                 .collect(Collectors.toMap(
                     ep -> ep.getTitle().toLowerCase(),
@@ -57,12 +54,9 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
                     (existing, replacement) -> existing // In case of duplicate keys, keep the first one
                 ));
 
-        // Enrich our products with data from external API
         products.forEach(productDTO -> {
-            // Try to find a matching external product by name
             ExternalProductDTO matchingProduct = externalProductMap.get(productDTO.getProductName().toLowerCase());
             if (matchingProduct != null) {
-                // Enrich our product with external data
                 productDTO.setExternalId(matchingProduct.getId().toString());
                 productDTO.setRating(matchingProduct.getRating() != null ? matchingProduct.getRating().getRate() : null);
                 productDTO.setRatingCount(matchingProduct.getRating() != null ? matchingProduct.getRating().getCount() : null);
@@ -73,20 +67,14 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
             }
         });
 
-        // Build the gRPC response
         ListProductsResponse.Builder responseBuilder = ListProductsResponse.newBuilder();
         products.forEach(productDTO -> responseBuilder.addProducts(mapToGrpcResponse(productDTO)));
 
         responseObserver.onNext(responseBuilder.build());
-        // BAD PRACTICE: Removed onCompleted() call
-        // This will cause the gRPC call to hang forever because the client will keep waiting for more messages
-        // or for the completion signal that never comes
-        // responseObserver.onCompleted();
     }
 
     @Override
     public void createProduct(CreateProductRequest request, StreamObserver<ProductResponse> responseObserver) {
-        // Manual mapping from gRPC request to DTO (inconsistent with other mappers)
         ProductDTO productDTO = ProductDTO.builder()
                 .productName(request.getProductName())
                 .description(request.getDescription())
@@ -106,7 +94,6 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
-    // Helper method to map ProductDTO to gRPC ProductResponse
     private ProductResponse mapToGrpcResponse(ProductDTO productDTO) {
         ProductResponse.Builder builder = ProductResponse.newBuilder()
                 .setId(productDTO.getId())
@@ -131,7 +118,6 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
             builder.setUpdatedAt(productDTO.getUpdatedAt().format(dateFormatter));
         }
 
-        // Add external API data if available
         if (productDTO.getExternalId() != null) {
             builder.setExternalId(productDTO.getExternalId());
         }

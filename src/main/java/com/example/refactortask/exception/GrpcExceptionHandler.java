@@ -7,28 +7,19 @@ import com.google.rpc.ErrorInfo;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import jakarta.validation.ConstraintViolationException;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.advice.GrpcAdvice;
 import org.slf4j.event.Level;
 
 import java.util.List;
 
-/**
- * Global exception handler for gRPC services.
- * This class provides methods to handle different types of exceptions and convert them to appropriate gRPC status codes.
- */
 @GrpcAdvice
 @Slf4j
-@AllArgsConstructor
 public class GrpcExceptionHandler {
 
     private static final String LOG_PREFIX = "GRPC EXCEPTION ADVICE";
     private static final String FAILED_WITH_LOG_MESSAGE = "{}: failed with {}: {}";
 
-    /**
-     * Handle ResourceNotFoundException
-     */
     @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(ResourceNotFoundException.class)
     public StatusRuntimeException handleResourceNotFoundException(ResourceNotFoundException ex) {
         logStandardException(ex, Level.WARN);
@@ -36,9 +27,6 @@ public class GrpcExceptionHandler {
         return StatusProto.toStatusRuntimeException(status.build());
     }
 
-    /**
-     * Handle IllegalArgumentException
-     */
     @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(IllegalArgumentException.class)
     public StatusRuntimeException handleIllegalArgumentException(IllegalArgumentException ex) {
         var status = buildRpcStatus(ex, Code.INVALID_ARGUMENT);
@@ -46,9 +34,6 @@ public class GrpcExceptionHandler {
         return StatusProto.toStatusRuntimeException(status.build());
     }
 
-    /**
-     * Handle ConstraintViolationException
-     */
     @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(ConstraintViolationException.class)
     public StatusRuntimeException handleConstraintViolationException(ConstraintViolationException ex) {
         BadRequest badRequest = buildViolationDetails(ex);
@@ -58,9 +43,6 @@ public class GrpcExceptionHandler {
         return StatusProto.toStatusRuntimeException(statusBuilder.build());
     }
 
-    /**
-     * Handle RuntimeException
-     */
     @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(RuntimeException.class)
     public StatusRuntimeException handleRuntimeException(RuntimeException ex) {
         logStandardException(ex, Level.ERROR);
@@ -68,9 +50,6 @@ public class GrpcExceptionHandler {
         return StatusProto.toStatusRuntimeException(status.build());
     }
 
-    /**
-     * Handle all other exceptions
-     */
     @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(Exception.class)
     public StatusRuntimeException handleException(Exception ex) {
         log.error(

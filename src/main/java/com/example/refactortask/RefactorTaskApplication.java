@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@EnableJpaRepositories // Redundant as it's auto-configured by Spring Boot
-@EnableTransactionManagement // Redundant as it's auto-configured by Spring Boot
+@EnableJpaRepositories
+@EnableTransactionManagement
 public class RefactorTaskApplication {
 
     public static void main(String[] args) {

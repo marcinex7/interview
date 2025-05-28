@@ -25,7 +25,6 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
 
-    // Using ResponseEntity for all endpoints
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());

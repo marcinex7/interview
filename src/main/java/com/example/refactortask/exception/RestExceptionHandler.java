@@ -11,17 +11,10 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Global exception handler for REST controllers.
- * This class demonstrates a centralized way to handle exceptions in REST APIs.
- */
 @ControllerAdvice
 @Slf4j
 public class RestExceptionHandler {
 
-    /**
-     * Handle ResourceNotFoundException
-     */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
@@ -37,10 +30,7 @@ public class RestExceptionHandler {
         
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
-    
-    /**
-     * Handle generic RuntimeException
-     */
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Object> handleRuntimeException(
             RuntimeException ex, WebRequest request) {
@@ -57,9 +47,6 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
-    /**
-     * Handle all other exceptions
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(
             Exception ex, WebRequest request) {

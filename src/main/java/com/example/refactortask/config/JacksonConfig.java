@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 @Configuration
 public class JacksonConfig {
 
-    // Redundant ObjectMapper configuration as it's already configured in application.properties
     @Bean
     @Primary
     public ObjectMapper objectMapper() {

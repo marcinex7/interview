@@ -36,12 +36,8 @@ public class DataInitializer {
             clothing.setName("Clothing");
             clothing.setDescription("Apparel and accessories");
             
-            Category books = new Category();
-            books.setName("Books");
-            books.setDescription("Books and publications");
-            
             // Save categories
-            List<Category> categories = Arrays.asList(electronics, clothing, books);
+            List<Category> categories = Arrays.asList(electronics, clothing);
             categoryRepository.saveAll(categories);
             
             // Create products
@@ -89,30 +85,8 @@ public class DataInitializer {
                     .isInStock(true)
                     .build();
             
-            Product novel = Product.builder()
-                    .productName("Novel")
-                    .description("Bestselling novel")
-                    .productPrice(new BigDecimal("14.99"))
-                    .stock_quantity(20)
-                    .category(books)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .isInStock(true)
-                    .build();
-            
-            Product textbook = Product.builder()
-                    .productName("Textbook")
-                    .description("Academic textbook")
-                    .productPrice(new BigDecimal("79.99"))
-                    .stock_quantity(0)
-                    .category(books)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .isInStock(false)
-                    .build();
-            
             // Save products
-            List<Product> products = Arrays.asList(laptop, smartphone, tShirt, jeans, novel, textbook);
+            List<Product> products = Arrays.asList(laptop, smartphone, tShirt, jeans);
             productRepository.saveAll(products);
         };
     }

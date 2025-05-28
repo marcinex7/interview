@@ -27,22 +27,6 @@ public class GrpcExceptionHandler {
         return StatusProto.toStatusRuntimeException(status.build());
     }
 
-    @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(IllegalArgumentException.class)
-    public StatusRuntimeException handleIllegalArgumentException(IllegalArgumentException ex) {
-        var status = buildRpcStatus(ex, Code.INVALID_ARGUMENT);
-        logStandardException(ex, Level.ERROR);
-        return StatusProto.toStatusRuntimeException(status.build());
-    }
-
-    @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(ConstraintViolationException.class)
-    public StatusRuntimeException handleConstraintViolationException(ConstraintViolationException ex) {
-        BadRequest badRequest = buildViolationDetails(ex);
-        logStandardException(ex, Level.ERROR);
-        com.google.rpc.Status.Builder statusBuilder = buildRpcStatus(ex, Code.INVALID_ARGUMENT);
-        statusBuilder.addDetails(Any.pack(badRequest));
-        return StatusProto.toStatusRuntimeException(statusBuilder.build());
-    }
-
     @net.devh.boot.grpc.server.advice.GrpcExceptionHandler(RuntimeException.class)
     public StatusRuntimeException handleRuntimeException(RuntimeException ex) {
         logStandardException(ex, Level.ERROR);
@@ -72,18 +56,6 @@ public class GrpcExceptionHandler {
             .addDetails(Any.pack(errorInfo));
     }
 
-    private static BadRequest buildViolationDetails(ConstraintViolationException ex) {
-        List<BadRequest.FieldViolation> list =
-            ex.getConstraintViolations().stream()
-                .map(
-                    constraintViolation ->
-                        BadRequest.FieldViolation.newBuilder()
-                            .setField(constraintViolation.getPropertyPath().toString())
-                            .setDescription(constraintViolation.getMessage())
-                            .build())
-                .toList();
-        return BadRequest.newBuilder().addAllFieldViolations(list).build();
-    }
 
     private static void logStandardException(RuntimeException ex, Level level) {
         log.atLevel(level)

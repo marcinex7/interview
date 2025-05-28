@@ -21,7 +21,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 
-    // Redundant content negotiation configuration
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer

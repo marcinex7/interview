@@ -37,7 +37,6 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
 
     @Override
     public void listProducts(ListProductsRequest request, StreamObserver<ListProductsResponse> responseObserver) {
-        // Get products from our database and sync with external API
         List<ProductDTO> products = productService.getAllProducts(false);
 
         ListProductsResponse.Builder responseBuilder = ListProductsResponse.newBuilder();

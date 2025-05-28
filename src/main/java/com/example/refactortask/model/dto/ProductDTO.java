@@ -23,4 +23,10 @@ public class ProductDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isInStock;
+
+    // Additional fields from external API
+    private String externalId;
+    private Double rating;
+    private Integer ratingCount;
+    private String imageUrl;
 }

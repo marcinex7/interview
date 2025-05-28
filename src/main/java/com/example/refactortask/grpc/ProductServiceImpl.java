@@ -9,6 +9,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -78,7 +79,10 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
         products.forEach(productDTO -> responseBuilder.addProducts(mapToGrpcResponse(productDTO)));
 
         responseObserver.onNext(responseBuilder.build());
-        responseObserver.onCompleted();
+        // BAD PRACTICE: Removed onCompleted() call
+        // This will cause the gRPC call to hang forever because the client will keep waiting for more messages
+        // or for the completion signal that never comes
+        // responseObserver.onCompleted();
     }
 
     @Override

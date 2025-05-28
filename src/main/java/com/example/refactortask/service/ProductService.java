@@ -56,8 +56,7 @@ public class ProductService {
 	@Transactional(readOnly = true)
 	public ProductDTO getProductById(Long id) {
 		log.info("Getting product by ID: {}", id);
-		Product product = productRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
+		Product product = productRepository.getById(id);
 		return productMapper.toDto(product);
 	}
 
@@ -80,7 +79,6 @@ public class ProductService {
 			throw e;
 		}
 	}
-
 
 	@Transactional
 	public CompletableFuture<Void> syncWithFakeApi() {

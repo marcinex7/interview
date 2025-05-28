@@ -19,7 +19,6 @@ import java.util.List;
 public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBase {
 
     private final ProductService productService;
-    private final FakeStoreApiClient fakeStoreApiClient;
 
     @Override
     public void getProduct(ProductRequest request, StreamObserver<ProductResponse> responseObserver) {

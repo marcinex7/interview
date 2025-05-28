@@ -1,0 +1,84 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.google.protobuf' version '0.9.4'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+description = 'Refactoring task for interview'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    protobufVersion = '3.21.7'
+    grpcVersion = '1.51.0'
+    lombokVersion = '1.18.24'
+    mapstructVersion = '1.5.3.Final'
+    modelmapperVersion = '3.1.0'
+}
+
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // Database
+    runtimeOnly 'com.h2database:h2'
+    
+    // gRPC
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+    
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    
+    // Mappers (intentionally using multiple)
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+    implementation "org.modelmapper:modelmapper:${modelmapperVersion}"
+    
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+// This ensures that the generated sources are properly included in the source sets
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/java'
+            srcDirs 'build/generated/source/proto/main/grpc'
+        }
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

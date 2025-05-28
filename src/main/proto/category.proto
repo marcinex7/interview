@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+// Inconsistent with product.proto: not using java_multiple_files
+option java_package = "com.example.refactortask.grpc";
+option java_outer_classname = "CategoryProto";
+
+package com.example.refactortask;
+
+// Different naming convention than ProductService
+service CategoryGrpcService {
+  // Different method naming convention
+  rpc FetchCategory(FetchCategoryRequest) returns (CategoryData);
+  rpc GetAllCategories(Empty) returns (CategoriesList);
+  // Different parameter naming (Create vs Add)
+  rpc AddCategory(AddCategoryRequest) returns (CategoryData);
+  // Different parameter naming (Update vs Modify)
+  rpc ModifyCategory(ModifyCategoryRequest) returns (CategoryData);
+  // Different parameter naming (Delete vs Remove)
+  rpc RemoveCategory(RemoveCategoryRequest) returns (RemoveResponse);
+  // Additional method not present in ProductService
+  rpc FindCategoryByName(FindByNameRequest) returns (CategoryData);
+}
+
+// Different naming convention than ProductRequest
+message FetchCategoryRequest {
+  // Using different field name (category_id vs id)
+  int64 category_id = 1;
+}
+
+// Different naming convention than ListProductsRequest
+message Empty {
+  // Empty message
+}
+
+// Different naming convention than CreateProductRequest
+message AddCategoryRequest {
+  string name = 1;
+  string description = 2;
+}
+
+// Different naming convention than UpdateProductRequest
+message ModifyCategoryRequest {
+  int64 category_id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+// Different naming convention than ProductRequest
+message RemoveCategoryRequest {
+  int64 category_id = 1;
+}
+
+// Additional message not present in product.proto
+message FindByNameRequest {
+  string name = 1;
+}
+
+// Different naming convention than ProductResponse
+message CategoryData {
+  int64 category_id = 1;
+  string name = 2;
+  string description = 3;
+  // Including product IDs in the response (inconsistent with ProductResponse)
+  repeated int64 product_ids = 4;
+}
+
+// Different naming convention than ListProductsResponse
+message CategoriesList {
+  repeated CategoryData categories = 1;
+}
+
+// Different naming convention than DeleteResponse
+message RemoveResponse {
+  bool success = 1;
+  string error_message = 2; // Different field name (error_message vs message)
+}

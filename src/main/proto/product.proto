@@ -18,7 +18,6 @@ message ProductRequest {
 }
 
 message ListProductsRequest {
-  // Empty request
 }
 
 message CreateProductRequest {
@@ -49,7 +48,6 @@ message ProductResponse {
   string updated_at = 8;
   bool is_in_stock = 9;
 
-  // Additional fields from external API
   string external_id = 10;
   double rating = 11;
   int32 rating_count = 12;

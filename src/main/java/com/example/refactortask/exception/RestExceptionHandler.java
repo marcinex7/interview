@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @ControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler {
+public class RestExceptionHandler {
 
     /**
      * Handle ResourceNotFoundException

@@ -60,11 +60,6 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Syncs product data with the external Fake Store API
-     * This endpoint triggers the synchronization of product data with the external API
-     * @return ResponseEntity with no content
-     */
     @PostMapping("/sync-with-fake-api")
     public ResponseEntity<Void> syncWithFakeApi() {
         productService.syncWithFakeApi();

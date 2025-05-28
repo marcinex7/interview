@@ -38,7 +38,6 @@ public class ProductService {
 	@Autowired
 	private FakeStoreApiClient fakeStoreApiClient;
 
-	@Transactional
 	public List<ProductDTO> getAllProducts(boolean refresh) {
 		if(refresh){
 			syncWithFakeApi();
@@ -119,26 +118,17 @@ public class ProductService {
 		}
 	}
 
-	/**
-	 * Syncs product data with the external Fake Store API
-	 * This method fetches product data from the external API, enriches our local products with it,
-	 * and saves them to the database.
-	 * 
-	 * @return CompletableFuture that completes when the sync is done
-	 */
+	@Transactional
 	public CompletableFuture<Void> syncWithFakeApi() {
 		return CompletableFuture.supplyAsync(() -> {
-			// Get products from our database directly to avoid circular dependency
 			List<Product> dbProducts = productRepository.findAll();
 			List<ProductDTO> products = dbProducts.stream()
 					.map(productMapper::toDto)
 					.collect(Collectors.toList());
 
-			// Fetch external product data from Fake Store API
 			List<ExternalProductDTO> externalProducts = fakeStoreApiClient.getAllProducts();
 			log.info("Fetched {} products from external API", externalProducts.size());
 
-			// Create a map of external products by name for easier lookup
 			Map<String, ExternalProductDTO> externalProductMap = externalProducts.stream()
 					.collect(Collectors.toMap(
 						ep -> ep.getTitle().toLowerCase(),
@@ -146,12 +136,9 @@ public class ProductService {
 						(existing, replacement) -> existing // In case of duplicate keys, keep the first one
 					));
 
-			// Enrich our products with data from external API
 			products.forEach(productDTO -> {
-				// Try to find a matching external product by name
 				ExternalProductDTO matchingProduct = externalProductMap.get(productDTO.getProductName().toLowerCase());
 				if (matchingProduct != null) {
-					// Enrich our product with external data
 					productDTO.setExternalId(matchingProduct.getId().toString());
 					productDTO.setRating(matchingProduct.getRating() != null ? matchingProduct.getRating().getRate() : null);
 					productDTO.setRatingCount(matchingProduct.getRating() != null ? matchingProduct.getRating().getCount() : null);
@@ -162,12 +149,10 @@ public class ProductService {
 				}
 			});
 
-			// Convert DTOs back to entities and save them to the database
 			List<Product> updatedProducts = products.stream()
 					.map(productMapper::toEntity)
 					.collect(Collectors.toList());
 
-			// Save the updated products to the database
 			productRepository.saveAll(updatedProducts);
 			log.info("Saved {} updated products to the database", updatedProducts.size());
 

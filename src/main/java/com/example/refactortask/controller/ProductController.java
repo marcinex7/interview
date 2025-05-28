@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -26,8 +27,8 @@ public class ProductController {
     private final CategoryRepository categoryRepository;
 
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts(true));
+    public ResponseEntity<List<ProductDTO>> getAllProducts(@RequestParam(value = "refresh", defaultValue = "false") boolean refresh) {
+        return ResponseEntity.ok(productService.getAllProducts(refresh));
     }
 
     @GetMapping("/{id}")
@@ -66,7 +67,6 @@ public class ProductController {
      */
     @PostMapping("/sync-with-fake-api")
     public ResponseEntity<Void> syncWithFakeApi() {
-        // Call the syncWithFakeApi method but don't wait for it to complete
         productService.syncWithFakeApi();
         return ResponseEntity.noContent().build();
     }

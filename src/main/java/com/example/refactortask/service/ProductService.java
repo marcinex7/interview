@@ -84,39 +84,6 @@ public class ProductService {
 		}
 	}
 
-	@Async
-	public CompletableFuture<ProductDTO> asyncGetProductById(Long id) {
-		log.info("Async getting product by ID: {}", id);
-		ProductDTO product = getProductById(id);
-		return CompletableFuture.completedFuture(product);
-	}
-
-	public void saveProductWithoutWaiting(ProductDTO productDTO) {
-		log.info("Saving product without waiting: {}", productDTO.getProductName());
-
-		saveProductAsync(productDTO);
-
-		log.info("Continued processing without waiting for save to complete");
-	}
-
-	private CompletableFuture<ProductDTO> saveProductAsync(ProductDTO productDTO) {
-		return CompletableFuture.supplyAsync(() -> {
-			log.info("Async saving product: {}", productDTO.getProductName());
-			return createProduct(productDTO);
-		});
-	}
-
-	public String convertProductToJson(ProductDTO productDTO) {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-			return mapper.writeValueAsString(productDTO);
-		} catch (Exception e) {
-			log.error("Error converting product to JSON: {}", e.getMessage(), e);
-			throw new RuntimeException("Error converting product to JSON", e);
-		}
-	}
 
 	@Transactional
 	public CompletableFuture<Void> syncWithFakeApi() {

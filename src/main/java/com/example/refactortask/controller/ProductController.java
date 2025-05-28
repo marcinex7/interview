@@ -28,7 +28,7 @@ public class ProductController {
     // Using ResponseEntity for all endpoints
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+        return ResponseEntity.ok(productService.getAllProducts(true));
     }
 
     @GetMapping("/{id}")
@@ -58,6 +58,18 @@ public class ProductController {
                 null
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Syncs product data with the external Fake Store API
+     * This endpoint triggers the synchronization of product data with the external API
+     * @return ResponseEntity with no content
+     */
+    @PostMapping("/sync-with-fake-api")
+    public ResponseEntity<Void> syncWithFakeApi() {
+        // Call the syncWithFakeApi method but don't wait for it to complete
+        productService.syncWithFakeApi();
+        return ResponseEntity.noContent().build();
     }
 
 }

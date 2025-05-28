@@ -1,7 +1,6 @@
 package com.example.refactortask.grpc;
 
 import com.example.refactortask.client.FakeStoreApiClient;
-import com.example.refactortask.model.dto.ExternalProductDTO;
 import com.example.refactortask.model.dto.ProductDTO;
 import com.example.refactortask.service.ProductService;
 import io.grpc.Status;
@@ -9,14 +8,10 @@ import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @GrpcService
 @RequiredArgsConstructor
@@ -25,7 +20,6 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
 
     private final ProductService productService;
     private final FakeStoreApiClient fakeStoreApiClient;
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public void getProduct(ProductRequest request, StreamObserver<ProductResponse> responseObserver) {
@@ -40,38 +34,11 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
+
     @Override
     public void listProducts(ListProductsRequest request, StreamObserver<ListProductsResponse> responseObserver) {
-        // Get products from our database
-        List<ProductDTO> products = productService.getAllProducts();
-
-        // Fetch external product data from Fake Store API
-        List<ExternalProductDTO> externalProducts = fakeStoreApiClient.getAllProducts();
-        log.info("Fetched {} products from external API", externalProducts.size());
-
-        // Create a map of external products by name for easier lookup
-        Map<String, ExternalProductDTO> externalProductMap = externalProducts.stream()
-                .collect(Collectors.toMap(
-                    ep -> ep.getTitle().toLowerCase(),
-                    Function.identity(),
-                    (existing, replacement) -> existing // In case of duplicate keys, keep the first one
-                ));
-
-        // Enrich our products with data from external API
-        products.forEach(productDTO -> {
-            // Try to find a matching external product by name
-            ExternalProductDTO matchingProduct = externalProductMap.get(productDTO.getProductName().toLowerCase());
-            if (matchingProduct != null) {
-                // Enrich our product with external data
-                productDTO.setExternalId(matchingProduct.getId().toString());
-                productDTO.setRating(matchingProduct.getRating() != null ? matchingProduct.getRating().getRate() : null);
-                productDTO.setRatingCount(matchingProduct.getRating() != null ? matchingProduct.getRating().getCount() : null);
-                productDTO.setImageUrl(matchingProduct.getImage());
-                log.debug("Enriched product {} with external data", productDTO.getProductName());
-            } else {
-                log.debug("No matching external product found for {}", productDTO.getProductName());
-            }
-        });
+        // Get products from our database and sync with external API
+        List<ProductDTO> products = productService.getAllProducts(false);
 
         // Build the gRPC response
         ListProductsResponse.Builder responseBuilder = ListProductsResponse.newBuilder();
@@ -123,12 +90,13 @@ public class ProductServiceImpl extends ProductServiceGrpc.ProductServiceImplBas
             builder.setCategoryId(productDTO.getCategoryId());
         }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         if (productDTO.getCreatedAt() != null) {
-            builder.setCreatedAt(productDTO.getCreatedAt().format(dateFormatter));
+            builder.setCreatedAt(productDTO.getCreatedAt().format(formatter));
         }
 
         if (productDTO.getUpdatedAt() != null) {
-            builder.setUpdatedAt(productDTO.getUpdatedAt().format(dateFormatter));
+            builder.setUpdatedAt(productDTO.getUpdatedAt().format(formatter));
         }
 
         // Add external API data if available

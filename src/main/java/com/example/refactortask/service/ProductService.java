@@ -1,7 +1,9 @@
 package com.example.refactortask.service;
 
+import com.example.refactortask.client.FakeStoreApiClient;
 import com.example.refactortask.exception.ResourceNotFoundException;
 import com.example.refactortask.mapper.ProductMapper;
+import com.example.refactortask.model.dto.ExternalProductDTO;
 import com.example.refactortask.model.dto.ProductDTO;
 import com.example.refactortask.model.entity.Category;
 import com.example.refactortask.model.entity.Product;
@@ -15,7 +17,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,8 +35,14 @@ public class ProductService {
 	@Autowired
 	private ProductMapper productMapper;
 
-	@Transactional(readOnly = true)
-	public List<ProductDTO> getAllProducts() {
+	@Autowired
+	private FakeStoreApiClient fakeStoreApiClient;
+
+	@Transactional
+	public List<ProductDTO> getAllProducts(boolean refresh) {
+		if(refresh){
+			syncWithFakeApi();
+		}
 		List<Product> products = productRepository.findAll();
 
 		// BAD PRACTICE: Modifying the source collection during stream processing
@@ -150,5 +160,62 @@ public class ProductService {
 			throw new RuntimeException("Error converting product to JSON", e);
 		}
 	}
+
+	/**
+	 * Syncs product data with the external Fake Store API
+	 * This method fetches product data from the external API, enriches our local products with it,
+	 * and saves them to the database.
+	 * 
+	 * @return CompletableFuture that completes when the sync is done
+	 */
+	public CompletableFuture<Void> syncWithFakeApi() {
+		return CompletableFuture.supplyAsync(() -> {
+			// Get products from our database directly to avoid circular dependency
+			List<Product> dbProducts = productRepository.findAll();
+			List<ProductDTO> products = dbProducts.stream()
+					.map(productMapper::toDto)
+					.collect(Collectors.toList());
+
+			// Fetch external product data from Fake Store API
+			List<ExternalProductDTO> externalProducts = fakeStoreApiClient.getAllProducts();
+			log.info("Fetched {} products from external API", externalProducts.size());
+
+			// Create a map of external products by name for easier lookup
+			Map<String, ExternalProductDTO> externalProductMap = externalProducts.stream()
+					.collect(Collectors.toMap(
+						ep -> ep.getTitle().toLowerCase(),
+						Function.identity(),
+						(existing, replacement) -> existing // In case of duplicate keys, keep the first one
+					));
+
+			// Enrich our products with data from external API
+			products.forEach(productDTO -> {
+				// Try to find a matching external product by name
+				ExternalProductDTO matchingProduct = externalProductMap.get(productDTO.getProductName().toLowerCase());
+				if (matchingProduct != null) {
+					// Enrich our product with external data
+					productDTO.setExternalId(matchingProduct.getId().toString());
+					productDTO.setRating(matchingProduct.getRating() != null ? matchingProduct.getRating().getRate() : null);
+					productDTO.setRatingCount(matchingProduct.getRating() != null ? matchingProduct.getRating().getCount() : null);
+					productDTO.setImageUrl(matchingProduct.getImage());
+					log.debug("Enriched product {} with external data", productDTO.getProductName());
+				} else {
+					log.debug("No matching external product found for {}", productDTO.getProductName());
+				}
+			});
+
+			// Convert DTOs back to entities and save them to the database
+			List<Product> updatedProducts = products.stream()
+					.map(productMapper::toEntity)
+					.collect(Collectors.toList());
+
+			// Save the updated products to the database
+			productRepository.saveAll(updatedProducts);
+			log.info("Saved {} updated products to the database", updatedProducts.size());
+
+			return null;
+		});
+	}
+
 
 }
